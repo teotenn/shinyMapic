@@ -18,8 +18,12 @@ ui <- function(req){
       mod_intro_ui("intro")
     ),
     tabPanel(
-      "Second tab",
-      shiny::h1("Second tab")
+      "Coords",
+      mod_coords_ui("coords")
+    ),
+    tabPanel(
+      "Maps",
+      mod_maps_ui("maps")
     )
   )
 }
