@@ -1,25 +1,24 @@
-#' Module intro ui
+#' Module session ui
 #' 
 #' @param id Unique id for module instance.
 #'
 #' @import shiny
 #' @noRd
-mod_intro_ui <- function(id){
+mod_session_ui <- function(id){
   ns <- NS(id)
 
   tagList(
-    fluidRow(h2("Intro")),
     fluidRow(
-      p("Text")
-    )
+      column(7, h6("Session No.")),
+      column(5, p("123")))
   )
 }
 
 
-#' Module Intro Server Functions
+#' Module session Server Functions
 #'
 #' @noRd
-mod_intro_server <- function(id){
+mod_session_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -28,7 +27,8 @@ mod_intro_server <- function(id){
 
 
 ## To be copied in the UI
-# mod_intro_ui("intro")
+# mod_session_ui("session")
 
 ## To be copied in the server
-# mod_intro_server("intro")
+# mod_session_server("session")
+
