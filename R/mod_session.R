@@ -10,7 +10,8 @@ mod_session_ui <- function(id){
   tagList(
     fluidRow(
       column(7, h6("Session No.")),
-      column(5, p("123")))
+      column(5, tags$h6(textOutput(NS(id, "session_id"), inline = TRUE)))
+    )
   )
 }
 
@@ -21,7 +22,7 @@ mod_session_ui <- function(id){
 mod_session_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
-
+    output$session_id <- renderPrint({paste(Sys.Date(), rnorm(1, 100), sep = "-")})
   })
 }
 

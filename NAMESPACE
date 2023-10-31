@@ -2,4 +2,5 @@
 
 export(run_app)
 import(shiny)
+importFrom(DT,DTOutput)
 importFrom(shiny,shinyApp)
