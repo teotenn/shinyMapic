@@ -1,0 +1,12 @@
+Package: shinyMapic
+Title: Shiny app for Mapic
+Version: 0.0.9
+Authors@R: 
+    person("Manuel", "Teodoro", , "teotenn@proton.me", role = c("aut", "cre"))
+Description: A shiny app to create maps of infrastructure per city.
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports: 
+    shiny
