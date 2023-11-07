@@ -44,7 +44,7 @@ mod_intro_ui <- function(id){
 
 #' Module Intro Server Functions
 #'
-#' @importFrom DT DTOutput
+#' @importFrom DT renderDT
 #' @noRd
 mod_intro_server <- function(id){
   moduleServer( id, function(input, output, session){

@@ -22,7 +22,7 @@ mod_session_ui <- function(id){
 mod_session_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
-    output$session_id <- renderPrint({paste(Sys.Date(), rnorm(1, 100), sep = "-")})
+    output$session_id <- renderPrint({cat(paste(Sys.Date(), rnorm(1, 100), sep = "-"))})
   })
 }
 
