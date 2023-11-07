@@ -3,4 +3,8 @@
 export(run_app)
 import(shiny)
 importFrom(DT,DTOutput)
+importFrom(DT,renderDT)
+importFrom(rhandsontable,rHandsontableOutput)
+importFrom(rhandsontable,renderRHandsontable)
+importFrom(rhandsontable,rhandsontable)
 importFrom(shiny,shinyApp)

@@ -10,4 +10,5 @@
 server <- function(input, output, session){
   mod_intro_server("intro")
   mod_session_server("session")
+  mod_coords_server("coords")
 }
