@@ -22,10 +22,9 @@ mod_maps_ui <- function(id){
                sliderInput(NS(id, "slid_year"), "Year",
                            min = 1950,
                            max = as.numeric(format(Sys.time(), "%Y")),
-                           value = as.numeric(format(Sys.time(), "%Y")),
+                           value = as.numeric(format(Sys.time(), "%Y")),                          
                            animate = TRUE)
-             )
-             )
+             ))
     ),
     
     ## Second row, table and map
@@ -36,16 +35,15 @@ mod_maps_ui <- function(id){
              column(1,
                     br(),
                     br(),
-                    br(),
-                    br(),
                     noUiSliderInput(
                       inputId = NS(id, "sld_lat"), label = "Latitude",
                       min = min(map_data("world")$lat), max = max(map_data("world")$lat),
                       value = c(min(map_data("world")$lat), max(map_data("world")$lat)),
+                      direction = "rtl",
                       margin = 1,
                       update_on = "end",
                       orientation = "vertical",
-                      width = "10px", height = "300px")),
+                      width = "1px", height = "400px")),
              column(11,
                     fluidRow(
                       column(10, offset = 2,
@@ -55,6 +53,7 @@ mod_maps_ui <- function(id){
                         min = min(map_data("world")$long), max = max(map_data("world")$long),
                         value = c(min(map_data("world")$long), max(map_data("world")$long)),
                         update_on = "end",
+                        width = "600px",
                         margin = 1)),
                       plotOutput(NS(id, "plt_map"),
                                  dblclick = NS(id, "plt_map_dblclick"),
@@ -86,58 +85,61 @@ mod_maps_ui <- function(id){
 #' Module maps Server Functions
 #'
 #' @import ggplot2
+#' @importFrom shinyWidgets updateNoUiSliderInput
 #' @noRd
 mod_maps_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    y_limits <- reactive(input$sld_lat)
-    x_limits <- reactive(input$sld_lon)
+    ## Reactive values: coords
+    ranges <- reactiveValues(
+      xlon = c(min(map_data("world")$lon), max(map_data("world")$lon)),
+      ylat = c(min(map_data("world")$lat), max(map_data("world")$lat)),
+      x = NULL, y = NULL)
 
-    ## Init plot and DT
+    observeEvent(input$sld_lon, {
+      ranges$xlon <- input$sld_lon
+    })
+    observeEvent(input$sld_lat, {
+      ranges$ylat <- input$sld_lat
+    })
+    observeEvent(input$plt_map_dblclick, {
+      brush <- input$plt_map_selected
+      if (!is.null(brush)) {
+        ranges$xlon <- c(brush$xmin, brush$xmax)
+        ranges$ylat <- c(brush$ymin, brush$ymax)
+      } else {
+        ranges$xlon <- c(min(map_data("world")$lon), max(map_data("world")$lon))
+        ranges$ylat <- c(min(map_data("world")$lat), max(map_data("world")$lat))
+      }
+      shinyWidgets::updateNoUiSliderInput(inputId = "sld_lon", value = ranges$xlon)
+      shinyWidgets::updateNoUiSliderInput(inputId = "sld_lat", value = ranges$ylat)
+    })
+
+    ## Initial plot and DT
     output$plt_map <- renderPlot({
       ggplot() +
         geom_polygon(data = map_data("world"),
                      aes(x = long, y = lat, group = group)) +
         coord_fixed(1.3,
-                    xlim = x_limits(),
-                    ylim = y_limits())
+                    xlim = ranges$xlon,
+                    ylim = ranges$ylat)
     })
     
     output$dt_data_map <- DT::renderDT({
         data.frame(id = 1:200,
-                   country = "MX",
-                   city = letters[1:20],
+                   country = "",
+                   city = "",
                    state = NA,
                    county = NA,
                    region = NA,
-                   start_year = c(1990, 1995, 2001, 2010, 2020),
+                   start_year = NA,
                    end_year = NA)
     })
 
-    ## Reactivity
-    ranges <- reactiveValues(x = NULL, y = NULL)
+    ## call the data
 
-    observeEvent(input$btn_render_map, {
-      output$plt_map <- renderPlot({
-        ggplot(mtcars, aes(wt, mpg)) +
-          geom_point() +
-          coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
-      })
-    })
-
-    ## When a double-click happens, check if there's a brush on the plot.
-    ## If so, zoom to the brush bounds; if not, reset the zoom.
-    observeEvent(input$plt_map_dblclick, {
-      brush <- input$plt_map_selected
-      if (!is.null(brush)) {
-        ranges$x <- c(brush$xmin, brush$xmax)
-        ranges$y <- c(brush$ymin, brush$ymax)
-      } else {
-        ranges$x <- NULL
-        ranges$y <- NULL
-      }
-    })
+    ## make map
 
   })
 }
