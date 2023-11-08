@@ -12,13 +12,15 @@ mod_coords_ui <- function(id){
   tagList(
     fluidRow(h2("Search Coords")),
     ## shinyjs::useShinyjs(),
+    
     fluidRow( # First row, buttons
       column(4,
-             column(6, actionButton(NS(id, "bt_search_coords"), "Search Coords")),
-             column(6, actionButton(NS(id, "bt_remove_search"), "Clear Table"))
+             column(6, actionButton(NS(id, "btn_search_coords"), "Search Coords")),
+             column(6, actionButton(NS(id, "btn_remove_search"), "Clear Table"))
              )
     ),
-    # Second row, search tables and logs/missing
+    
+    ## Second row, search tables and logs/missing
     fluidRow(
       column(5,
              rHandsontableOutput(NS(id, "rhst_country_dat"))),
@@ -27,10 +29,11 @@ mod_coords_ui <- function(id){
                #tags$head(tags$script(src='script.js'))
                DT::DTOutput(NS(id, "dt_not_found"))
              ),
+      ## 3rd row, add missing
       fluidRow( # Add missing manually
         column(3,
-               fluidRow(actionButton(NS(id, "bt_add_manually"), "Add Data")),
-               fluidRow(actionButton(NS(id, "bt_clear_bottom_table"), "Clear Data"))),
+               fluidRow(actionButton(NS(id, "btn_add_manually"), "Add Data")),
+               fluidRow(actionButton(NS(id, "btn_clear_bottom_table"), "Clear Data"))),
         column(9,
                rhandsontable::rHandsontableOutput(NS(id, "rhst_add_manually")))
       )
@@ -79,12 +82,12 @@ mod_coords_server <- function(id){
 
     ## ----- Reactive interactions -----
     ## Clear search data button 'Remove'
-    observeEvent(input$bt_remove_search, {
+    observeEvent(input$btn_remove_search, {
       output$rhst_country_dat <- renderRHandsontable(rhandsontable(empty_coords, readOnly = F))
     })
 
     ## Search coords
-    observeEvent(input$bt_search_coords, {
+    observeEvent(input$btn_search_coords, {
       output$txt_search_log <- renderPrint({
         for (i in 1:10) print(letters[i])
       })
@@ -105,10 +108,10 @@ mod_coords_server <- function(id){
     })
 
     ## Add coords manually
-     observeEvent(input$bt_clear_bottom_table, {
+     observeEvent(input$btn_clear_bottom_table, {
       output$rhst_add_manually = renderRHandsontable(rhandsontable(mapic_df, readOnly = F))
     })
-    observeEvent(input$bt_add_manually, {
+    observeEvent(input$btn_add_manually, {
       print("added")
     })
   })

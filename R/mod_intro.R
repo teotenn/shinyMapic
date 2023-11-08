@@ -32,10 +32,10 @@ mod_intro_ui <- function(id){
                       NS(id, "in_session_id"),
                       h5("Session ID"), 
                       value = "ID no..."),
-                    actionButton(NS(id, "bt_load_session"), "Load Session")
+                    actionButton(NS(id, "btn_load_session"), "Load Session")
                     )
              ),
-      actionButton(NS(id, "bt_load_filtered_data"), "Load Data"),
+      actionButton(NS(id, "btn_load_filtered_data"), "Load Data"),
       DT::DTOutput(NS(id, "dt_main_view"))
     )
   )
@@ -50,7 +50,7 @@ mod_intro_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    observeEvent(input$bt_load_filtered_data, {
+    observeEvent(input$btn_load_filtered_data, {
       output$dt_main_view <- DT::renderDT({
         data.frame(id = 1:200,
                    country = "MX",
