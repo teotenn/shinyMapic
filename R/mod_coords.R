@@ -44,12 +44,15 @@ mod_coords_ui <- function(id){
 
 #' Module coords Server Functions
 #'
-#' @importFrom rhandsontable renderRHandsontable rhandsontable
+#' @importFrom rhandsontable renderRHandsontable rhandsontable hot_to_r
 #' @importFrom DT renderDT
+#' @importFrom mapic api_to_db db_compare_data
 #' @noRd
 mod_coords_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
+
+    current_mdb <- get("mdb_local_db", envir = mapic_env)
 
     ## Init data
     empty_coords <- data.frame(
@@ -88,22 +91,27 @@ mod_coords_server <- function(id){
 
     ## Search coords
     observeEvent(input$btn_search_coords, {
+      data_to_search <- hot_to_r(input$rhst_country_dat)
+      ##### TODO: give proper IDs below <--------------------------------------------------|
+      data_to_search$id <- c(1:nrow(data_to_search))
+      ##### TODO: make sure that the remaining data is correct <------------------------------|
+
+      ## Sending to db
+      print(data_to_search)
+      api_to_db(current_mdb, data_to_search,
+                city = "city",
+                country = "country",
+                state = "state",
+                county = "region",
+                start_year = "year_start",
+                end_year = "year_end")
+      
       output$txt_search_log <- renderPrint({
         for (i in 1:10) print(letters[i])
       })
-      output$dt_not_found <- DT::renderDT({
-        data.frame(
-          id = paste("A", c(1:5)),
-          year_start = 2001:2005,
-          year_end = NA,
-          city = "Fake",
-          country = "MX",
-          region = NA,
-          state = "State",
-          county = NA,
-          lon = 1:5,
-          lat = 11:15,
-          osm_name = character(5))
+      
+      output$dt_not_found <- DT::renderDT({data.frame()
+        db_compare_data(current_mdb, data_to_search)
       })
     })
 

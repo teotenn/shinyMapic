@@ -22,9 +22,16 @@ mod_session_ui <- function(id){
 mod_session_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
-    output$session_id <- renderPrint({cat(paste(
-      format(Sys.time(), "%Y%m%d-%H%M%S"),
-      round(rnorm(1, 100), 2), sep = "-"))})
+
+    sID <- paste(
+      "TBL",
+      format(Sys.time(), "%Y%m%d_%H%M%S"),
+      sample.int(999, 1), sep = "_")
+    
+    output$session_id <- renderPrint({cat(sID)})
+    
+    assign("sessionID", sID, envir = mapic_env)
+    mapic_dbconf_tbl(sID)
   })
 }
 

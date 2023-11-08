@@ -45,14 +45,20 @@ mod_intro_ui <- function(id){
 #' Module Intro Server Functions
 #'
 #' @importFrom DT renderDT
+#' @importFrom mapic db_load
 #' @noRd
 mod_intro_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
     observeEvent(input$btn_load_filtered_data, {
-      output$dt_main_view <- DT::renderDT({
-        data.frame(id = 1:200,
+      ## Data from session
+      if (input$select_source == "sess") {
+        current_mdb <- get("mdb_local_db", envir = mapic_env)
+        current_data <- db_load(current_mdb)
+        ## Data from DB
+      } else if (input$select_source == "db") {
+        current_data <- data.frame(id = 1:200,
                    country = "MX",
                    city = letters[1:20],
                    state = NA,
@@ -60,6 +66,13 @@ mod_intro_server <- function(id){
                    region = NA,
                    start_year = c(1990, 1995, 2001, 2010, 2020),
                    end_year = NA)
+        ## Else, safety net
+      } else {
+        current_data <- data.frame()
+      }
+
+      output$dt_main_view <- DT::renderDT({
+        current_data
       })
     })
   })
