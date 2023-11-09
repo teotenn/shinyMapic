@@ -23,15 +23,8 @@ mod_session_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    sID <- paste(
-      "TBL",
-      format(Sys.time(), "%Y%m%d_%H%M%S"),
-      sample.int(999, 1), sep = "_")
-    
-    output$session_id <- renderPrint({cat(sID)})
-    
-    assign("sessionID", sID, envir = mapic_env)
-    mapic_dbconf_tbl(sID)
+    react_f_intro <- get("reactive_from_intro", envir = mapic_env)
+    output$session_id <- renderPrint({cat(react_f_intro$session_id)})
   })
 }
 

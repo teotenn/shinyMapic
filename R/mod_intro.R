@@ -50,15 +50,35 @@ mod_intro_ui <- function(id){
 mod_intro_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+    reactive_from_intro <- reactiveValues(current_data = data.frame())
+
+    ## SESSION ID
+    sID <- paste(
+      "TBL",
+      format(Sys.time(), "%Y%m%d_%H%M%S"),
+      sample.int(999, 1), sep = "_")
+    observe({reactive_from_intro$session_id <- sID})
+    mapic_dbconf_tbl(sID)
+
+    assign("reactive_from_intro", reactive_from_intro, envir = mapic_env)
+
+    ## Change session ID 
+    observeEvent(input$btn_load_session, {
+      ##### TODO: Add validators/error handlers for input ID <---------------------------------|
+      reactive_from_intro$session_id <- input$in_session_id
+      assign("reactive_from_intro", reactive_from_intro, envir = mapic_env)
+      mapic_dbconf_tbl(input$in_session_id)
+      ##### TODO: The button needs notification to say that session was loaded <----------------|
+    })
 
     observeEvent(input$btn_load_filtered_data, {
       ## Data from session
       if (input$select_source == "sess") {
         current_mdb <- get("mdb_local_db", envir = mapic_env)
-        current_data <- db_load(current_mdb)
+        reactive_from_intro$current_data <- db_load(current_mdb)
         ## Data from DB
       } else if (input$select_source == "db") {
-        current_data <- data.frame(id = 1:200,
+        reactive_from_intro$current_data <- data.frame(id = 1:200,
                    country = "MX",
                    city = letters[1:20],
                    state = NA,
@@ -68,12 +88,15 @@ mod_intro_server <- function(id){
                    end_year = NA)
         ## Else, safety net
       } else {
-        current_data <- data.frame()
+        reactive_from_intro$current_data <- data.frame()
       }
 
       output$dt_main_view <- DT::renderDT({
-        current_data
+        reactive_from_intro$current_data
       })
+
+      ## Place the currently used data in the mapic_env
+      assign("reactive_from_intro", reactive_from_intro, envir = mapic_env)
     })
   })
 }

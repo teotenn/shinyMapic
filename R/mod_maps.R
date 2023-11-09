@@ -125,21 +125,12 @@ mod_maps_server <- function(id){
                     xlim = ranges$xlon,
                     ylim = ranges$ylat)
     })
-    
-    output$dt_data_map <- DT::renderDT({
-        data.frame(id = 1:200,
-                   country = "",
-                   city = "",
-                   state = NA,
-                   county = NA,
-                   region = NA,
-                   start_year = NA,
-                   end_year = NA)
-    })
 
     ## call the data
+    reactive_from_intro <- get("reactive_from_intro", envir = mapic_env)
+    output$dt_data_map <- DT::renderDT({ reactive_from_intro$current_data })
 
-    ## make map
+    ## Render map
 
   })
 }
