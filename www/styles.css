@@ -1,0 +1,8 @@
+
+#coords-txt_search_log {
+    color: red;
+    font-size: 10px;
+    font-style: italic;
+    overflow-y: scroll;
+    max-height: 600px;
+}

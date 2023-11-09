@@ -5,10 +5,15 @@
 #' @param req The request object.
 #' 
 #' @import shiny
+#' @importFrom shinyjs useShinyjs
 #' 
 #' @noRd
 ui <- function(req){
   fluidPage(
+    includeCSS("www/styles.css"),
+    includeScript("www/script.js"),
+    shinyjs::useShinyjs(),
+    
     fluidRow(
       column(10, h1("Maps")),
       column(2, mod_session_ui("session"))

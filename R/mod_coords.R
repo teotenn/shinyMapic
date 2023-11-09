@@ -1,5 +1,5 @@
 #' Module coords ui
-#' 
+#'
 #' @param id Unique id for module instance.
 #'
 #' @import shiny
@@ -11,22 +11,20 @@ mod_coords_ui <- function(id){
 
   tagList(
     fluidRow(h2("Search Coords")),
-    ## shinyjs::useShinyjs(),
-    
+
     fluidRow( # First row, buttons
       column(4,
              column(6, actionButton(NS(id, "btn_search_coords"), "Search Coords")),
              column(6, actionButton(NS(id, "btn_remove_search"), "Clear Table"))
              )
     ),
-    
+
     ## Second row, search tables and logs/missing
     fluidRow(
       column(5,
              rHandsontableOutput(NS(id, "rhst_country_dat"))),
       column(7,
                verbatimTextOutput(NS(id, "txt_search_log")),
-               #tags$head(tags$script(src='script.js'))
                DT::DTOutput(NS(id, "dt_not_found"))
              ),
       ## 3rd row, add missing
@@ -47,6 +45,7 @@ mod_coords_ui <- function(id){
 #' @importFrom rhandsontable renderRHandsontable rhandsontable hot_to_r
 #' @importFrom DT renderDT
 #' @importFrom mapic api_to_db db_compare_data
+#' @importFrom shinyjs html
 #' @noRd
 mod_coords_server <- function(id){
   moduleServer(id, function(input, output, session){
@@ -82,7 +81,6 @@ mod_coords_server <- function(id){
     output$txt_search_log <- renderPrint({"Log Info"})
     output$dt_not_found <- DT::renderDT({mapic_df})
 
-
     ## ----- Reactive interactions -----
     ## Clear search data button 'Remove'
     observeEvent(input$btn_remove_search, {
@@ -97,19 +95,23 @@ mod_coords_server <- function(id){
       ##### TODO: make sure that the remaining data is correct <------------------------------|
 
       ## Sending to db
-      print(data_to_search)
-      api_to_db(current_mdb, data_to_search,
-                city = "city",
-                country = "country",
-                state = "state",
-                county = "region",
-                start_year = "year_start",
-                end_year = "year_end")
-      
-      output$txt_search_log <- renderPrint({
-        for (i in 1:10) print(letters[i])
-      })
-      
+      withCallingHandlers({
+        shinyjs::html("txt_search_log", "Log Info:<br>")
+        api_to_db(current_mdb, data_to_search,
+                  city = "city",
+                  country = "country",
+                  state = "state",
+                  county = "region",
+                  start_year = "year_start",
+                  end_year = "year_end")
+      },
+        message = function(m) {
+          shinyjs::html(id = "txt_search_log",
+                        html = paste0(m$message, "<br>"),
+                        add = TRUE)
+        }
+      )
+
       output$dt_not_found <- DT::renderDT({data.frame()
         db_compare_data(current_mdb, data_to_search)
       })
