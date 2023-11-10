@@ -12,72 +12,91 @@ mod_maps_ui <- function(id){
 
   tagList(
     fluidRow(h2("Maps")),
+    div(
+      fluidRow( # First row, DT
+        DT::DTOutput(NS(id, "dt_data_map"))
+      )
+    ),
 
-    fluidRow( # First row, buttons
-      column(4,
-             column(6, actionButton(NS(id, "btn_render_map"), "Render Map"))
-             ),
-      column(6, offset = 2,
-             fluidRow(
-               sliderInput(NS(id, "slid_year"), "Year",
-                           min = 1950,
-                           max = as.numeric(format(Sys.time(), "%Y")),
-                           value = as.numeric(format(Sys.time(), "%Y")),                          
-                           animate = TRUE)
-             ))
+    div(
+      fluidRow( # 2nd row control btns
+        column(4,
+               column(6, actionButton(NS(id, "btn_render_map"), "Render Map"))
+               ),
+        column(6, offset = 2,
+               fluidRow(
+                 sliderInput(NS(id, "slid_year"), "Year",
+                             min = 1950,
+                             max = as.numeric(format(Sys.time(), "%Y")),
+                             value = as.numeric(format(Sys.time(), "%Y")),                          
+                             animate = TRUE)
+               ))
+      )
     ),
     
-    ## Second row, table and map
-    fluidRow(
-      column(4,
-             DT::DTOutput(NS(id, "dt_data_map"))),
-      column(7, offset = 1,
-             column(1,
-                    br(),
-                    br(),
-                    noUiSliderInput(
-                      inputId = NS(id, "sld_lat"), label = "Latitude",
-                      min = min(map_data("world")$lat), max = max(map_data("world")$lat),
-                      value = c(min(map_data("world")$lat), max(map_data("world")$lat)),
-                      direction = "rtl",
-                      margin = 1,
-                      update_on = "end",
-                      orientation = "vertical",
-                      width = "1px", height = "400px")),
-             column(11,
-                    fluidRow(
-                      column(10, offset = 2,
-                      noUiSliderInput(
-                        inputId = NS(id, "sld_lon"),
-                        label = "Longitude",
-                        min = min(map_data("world")$long), max = max(map_data("world")$long),
-                        value = c(min(map_data("world")$long), max(map_data("world")$long)),
-                        update_on = "end",
-                        width = "600px",
-                        margin = 1)),
-                      plotOutput(NS(id, "plt_map"),
-                                 dblclick = NS(id, "plt_map_dblclick"),
-                                 brush = brushOpts(
-                                   id = NS(id, "plt_map_selected"),
-                                   resetOnNew = TRUE))
-                    ))
-             )
+    div(
+      fluidRow( # 3rd row map
+        column(
+          1,
+          br(),
+          br(),
+          noUiSliderInput(
+            inputId = NS(id, "sld_lat"), label = "Latitude",
+            min = min(map_data("world")$lat), max = max(map_data("world")$lat),
+            value = c(min(map_data("world")$lat), max(map_data("world")$lat)),
+            direction = "rtl",
+            margin = 1,
+            update_on = "end",
+            orientation = "vertical",
+            width = "1px", height = "400px")
+        ),
+        column(
+          11,
+          fluidRow(
+            column(10, offset = 2,
+                   noUiSliderInput(
+                     inputId = NS(id, "sld_lon"),
+                     label = "Longitude",
+                     min = min(map_data("world")$long), max = max(map_data("world")$long),
+                     value = c(min(map_data("world")$long), max(map_data("world")$long)),
+                     update_on = "end",
+                     width = "800px",
+                     margin = 1))
+          ),
+          div(
+            fluidRow(
+              plotOutput(
+                NS(id, "plt_map"),
+                dblclick = NS(id, "plt_map_dblclick"),
+                brush = brushOpts(
+                  id = NS(id, "plt_map_selected"),
+                  resetOnNew = TRUE))
+            )
+          )
+        )
+      )
     ),
 
-    ## Third row, saving and labels
-    fluidRow(
-      column(5, p("Reserved section")),
-      column(7,
-             column(6,
-                    textInput(NS(id, "txi_year_lab"),
-                              h5("Year Label"), 
-                              value = "Year")),
-             column(6,
-                    textInput(NS(id, "txi_total_lab"),
-                              h5("Total Label"), 
-                              value = "Total"))
-             )
+    div(
+      fluidRow( # 4yh lab controls and save
+        column(3, p("Reserved section")),
+        column(
+          6,
+          column(
+            6,
+            textInput(NS(id, "txi_year_lab"),
+                      h5("Year Label"), 
+                      value = "Year")),
+          column(
+            6,
+            textInput(NS(id, "txi_total_lab"),
+                      h5("Total Label"), 
+                      value = "Total"))
+        ),
+        column(3, p("Saving section"))
+      )
     )
+    
   )
 }
 
@@ -86,6 +105,7 @@ mod_maps_ui <- function(id){
 #'
 #' @import ggplot2
 #' @importFrom shinyWidgets updateNoUiSliderInput
+#' @importFrom mapic base_map mapic_city_dots mapic_year_internal mapic_totals_internal mapic_city_names
 #' @noRd
 mod_maps_server <- function(id){
   moduleServer( id, function(input, output, session){
@@ -94,9 +114,9 @@ mod_maps_server <- function(id){
     ## Reactive values: coords
     ranges <- reactiveValues(
       xlon = c(min(map_data("world")$lon), max(map_data("world")$lon)),
-      ylat = c(min(map_data("world")$lat), max(map_data("world")$lat)),
-      x = NULL, y = NULL)
+      ylat = c(min(map_data("world")$lat), max(map_data("world")$lat)))
 
+    ## Coords manipulation
     observeEvent(input$sld_lon, {
       ranges$xlon <- input$sld_lon
     })
@@ -131,6 +151,24 @@ mod_maps_server <- function(id){
     output$dt_data_map <- DT::renderDT({ reactive_from_intro$current_data })
 
     ## Render map
+    observeEvent(input$btn_render_map, {
+      country_name <- na.omit( ## TODO: Add error handling when country not found <--------|
+        with(countries_naming_conventions,
+             ifelse(alpha.2 == reactive_from_intro$current_data$country, common_name, NA)))[1]
+
+      output$plt_map <- renderPlot({ ## TODO: Bug with coords when using mouse event <--------|
+        ## The bug could probably due to the message "Coordinate system already present..."
+        ## because it changes the values of x,y from -119,82 (MX) to 0.213,0.315 <------------|
+        base_map(country_name,
+                 ranges$xlon,
+                 ranges$ylat) |>
+          mapic_city_dots(reactive_from_intro$current_data,
+                          year = input$slid_year) # |>
+          ## mapic_city_names(c("Ciudad de Mexico", "Guadalajara", "Tijuana")) |> ## TODO <------|
+          ## mapic_year_internal(year_label = input$txi_year_lab) |>
+        ## mapic_totals_internal(totals_label = input$txt_total_lab)
+      })
+    })
 
   })
 }
