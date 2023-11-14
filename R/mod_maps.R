@@ -20,6 +20,7 @@ mod_maps_ui <- function(id){
 
     div(
       fluidRow( # 2nd row control btns
+        br(),
         column(4,
                column(6, actionButton(NS(id, "btn_render_map"), "Render Map"))
                ),
@@ -36,6 +37,7 @@ mod_maps_ui <- function(id){
     
     div(
       fluidRow( # 3rd row map
+        br(),
         column(
           1,
           br(),
@@ -65,12 +67,15 @@ mod_maps_ui <- function(id){
           ),
           div(
             fluidRow(
+              ## Main map
               plotOutput(
                 NS(id, "plt_map"),
                 dblclick = NS(id, "plt_map_dblclick"),
                 brush = brushOpts(
                   id = NS(id, "plt_map_selected"),
-                  resetOnNew = TRUE))
+                  resetOnNew = TRUE)),
+              ## Labels
+              plotOutput(NS(id, "plt_labels"), height = "150px", width = "80%")
             )
           )
         )
@@ -79,6 +84,7 @@ mod_maps_ui <- function(id){
 
     div(
       fluidRow( # 4yh lab controls and save
+        br(),
         column(3, p("Reserved section")),
         column(
           6,
@@ -105,7 +111,8 @@ mod_maps_ui <- function(id){
 #'
 #' @import ggplot2
 #' @importFrom shinyWidgets updateNoUiSliderInput
-#' @importFrom mapic base_map mapic_city_dots mapic_year_internal mapic_totals_internal mapic_city_names
+#' @importFrom mapic base_map mapic_city_dots mapic_year_external mapic_totals_external mapic_city_names
+#' @importFrom cowplot plot_grid
 #' @noRd
 mod_maps_server <- function(id){
   moduleServer( id, function(input, output, session){
@@ -156,18 +163,25 @@ mod_maps_server <- function(id){
         with(countries_naming_conventions,
              ifelse(alpha.2 == reactive_from_intro$current_data$country, common_name, NA)))[1]
 
+      the_map <- base_map(country_name,
+                          ranges$xlon,
+                          ranges$ylat) |>
+        mapic_city_dots(reactive_from_intro$current_data,
+                        year = input$slid_year) |>
+        ## mapic_city_names(c("Ciudad de Mexico", "Guadalajara", "Tijuana")) |> ## TODO <------|
+        mapic_year_external(year_label = input$txi_year_lab) |>
+        mapic_totals_external(totals_label = input$txi_total_lab)
+
+      the_labels <- plot_grid(the_map$mapic_year, the_map$mapic_totals, the_map$legend,
+                              nrow = 1, rel_widths = c(0.5, 0.5, 1.26))
+
       output$plt_map <- renderPlot({ ## TODO: Bug with coords when using mouse event <--------|
         ## The bug could probably due to the message "Coordinate system already present..."
         ## because it changes the values of x,y from -119,82 (MX) to 0.213,0.315 <------------|
-        base_map(country_name,
-                 ranges$xlon,
-                 ranges$ylat) |>
-          mapic_city_dots(reactive_from_intro$current_data,
-                          year = input$slid_year) # |>
-          ## mapic_city_names(c("Ciudad de Mexico", "Guadalajara", "Tijuana")) |> ## TODO <------|
-          ## mapic_year_internal(year_label = input$txi_year_lab) |>
-        ## mapic_totals_internal(totals_label = input$txt_total_lab)
+        the_map$mapic
       })
+
+      output$plt_labels <- renderPlot({ the_labels })
     })
 
   })
