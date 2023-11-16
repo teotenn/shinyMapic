@@ -100,10 +100,18 @@ mod_intro_server <- function(id){
         current_mdb <- get("mdb_local_db", envir = mapic_env)
         reactive_from_intro$current_data <- db_load(current_mdb)
         
-        ## Data from DB
+        ## Filtered data from DB
       } else if (input$select_source == "db") {
         mapic_env$main_db_connect()
-        loaded_data <- dbReadTable(mapic_env$con_main_db, mapic_env$main_table_name)
+        if (input$select_country == "All") {
+          loaded_data <- dbReadTable(mapic_env$con_main_db, mapic_env$main_table_name)
+        } else {
+          list_countries_to_load <- input$select_country         
+          loaded_data <- dplyr::tbl(mapic_env$con_main_db, mapic_env$main_table_name) %>%
+            #dplyr::filter_at(country == list_countries_to_load) %>%
+            dplyr::filter(country == list_countries_to_load) %>%
+            dplyr::collect()
+        }
         DBI::dbDisconnect(mapic_env$con_main_db)        
         reactive_from_intro$current_data <- loaded_data
         
