@@ -15,8 +15,9 @@ mod_intro_ui <- function(id){
              h4("Filters"),
              selectInput(NS(id, "select_country"),
                          h5("Filter by Country"), 
-                         choices = list("Choice 1" = 1, "Choice 2" = 2,
-                                        "Choice 3" = 3), selected = 1)
+                         choices = list("All" = 1),
+                         ## multiple = TRUE,
+                         selected = 1)
              ),
       column(6,
              h4("Source"),
@@ -103,12 +104,11 @@ mod_intro_server <- function(id){
         ## Filtered data from DB
       } else if (input$select_source == "db") {
         mapic_env$main_db_connect()
-        if (input$select_country == "All") {
+        if ("All" %in% input$select_country) {
           loaded_data <- dbReadTable(mapic_env$con_main_db, mapic_env$main_table_name)
         } else {
           list_countries_to_load <- input$select_country         
           loaded_data <- dplyr::tbl(mapic_env$con_main_db, mapic_env$main_table_name) %>%
-            #dplyr::filter_at(country == list_countries_to_load) %>%
             dplyr::filter(country == list_countries_to_load) %>%
             dplyr::collect()
         }

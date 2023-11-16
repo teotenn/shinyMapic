@@ -56,3 +56,13 @@ define_table_main_db <- function(main_table_name = "main_table") {
   assign("query_table", query_table, envir = mapic_env)
   assign("main_table_name", main_table_name, envir = mapic_env)
 }
+
+
+##### TODO: Change the lines below to be taken from YAML <---------------------------------|
+#' Define the command to load the table in the main DB
+#'
+#' @noRd
+define_mapic_colors <- function() {
+  app_mapic_colors <- mapic::with_default_colors(list(text_cities = "#000000"))
+  assign("app_mapic_colors", app_mapic_colors, envir = mapic_env) 
+}

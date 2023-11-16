@@ -12,6 +12,7 @@ server <- function(input, output, session){
   ## Load main data base
   define_connection_to_main_db()
   define_table_main_db()
+  define_mapic_colors()
 
   ##### TODO: Wrap this part inside try-catch just to test if DB connection is possible <-----|
   mapic_env$main_db_connect()

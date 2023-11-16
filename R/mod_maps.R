@@ -85,7 +85,13 @@ mod_maps_ui <- function(id){
     div(
       fluidRow( # 4yh lab controls and save
         br(),
-        column(3, p("Reserved section")),
+        column(
+          3,
+          selectInput(NS(id, "select_city_labs"),
+                         h5("City labels"), 
+                      choices = list("None"),
+                      selected = 1,
+                      multiple = TRUE)),
         column(
           6,
           column(
@@ -163,12 +169,20 @@ mod_maps_server <- function(id){
         with(countries_naming_conventions,
              ifelse(alpha.2 == reactive_from_intro$current_data$country, common_name, NA)))[1]
 
+      ## Add list of cities
+      updateSelectInput(
+        session,
+        "select_city_labs",
+        choices = append("None", unique(reactive_from_intro$current_data$city)))
+      cities_to_tag <- ifelse(input$select_city_labs == "None", "", input$select_city_labs)
+
       the_map <- base_map(country_name,
                           ranges$xlon,
-                          ranges$ylat) |>
+                          ranges$ylat,
+                          map_colors = mapic_env$app_mapic_colors) |>
         mapic_city_dots(reactive_from_intro$current_data,
                         year = input$slid_year) |>
-        ## mapic_city_names(c("Ciudad de Mexico", "Guadalajara", "Tijuana")) |> ## TODO <------|
+        mapic_city_names(cities_to_tag) |> ## TODO <------|
         mapic_year_external(year_label = input$txi_year_lab) |>
         mapic_totals_external(totals_label = input$txi_total_lab)
 
