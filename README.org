@@ -1,0 +1,18 @@
+#+TITLE: shinyMapic README
+#+AUTHOR: teoten
+#+EMAIL: teotenn@proton.me
+#+LANGUAGE: en
+#+STYLE: <style type="text/css">#outline-container-introduction{ clear:both; }</style>
+
+* Shiny app for mapic
+
+*Maps of Infrastructure per City (MAPIC)*
+
+Home repository in [[https://codeberg.org/teoten/shinyMapic][codeberg.org/teoten/shinyMapic]]
+
+Mirror [[https://github.com/teotenn/shinyMapic][github.com/teotenn/shinyMapic]]
+
+** Mapic source code
+Home repository in [[https://codeberg.org/teoten/mapic][codeberg.org/teoten/mapic]]
+
+Mirror [[https://github.com/teotenn/mapic][github.com/teotenn/mapic]]
